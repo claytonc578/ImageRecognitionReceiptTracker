@@ -3,8 +3,8 @@ import re
 
 from utilities import getChoice
 #---------------------------CONSTANTS---------------------------
-SL_THRESHOLD = 15 #image detection objects on the same line
-V_THRESHOLD = 10 #image detection objects adjacent vertically
+SL_THRESHOLD = 80 #image detection objects on the same line
+V_THRESHOLD = 80 #image detection objects adjacent vertically
 EXIT = 0
 SORT = 1
 
@@ -73,11 +73,51 @@ def sortItems(numPerson, df1):
         print("-----------------------------\n\n")
 
     return person_list
+
+
+
 #------------------------------------------------------
 def calculations(numPerson, person_list):
+    total_cost_list = [] #stores sum of each person and shared sum at end of list
+    money_owed = [0.0 for i in range(numPerson)] #amount that each person owes the one who paid
+
+    for person in person_list:
+        temp_sum = 0.0 #sum for current person
+        for index, row in person.iterrows():
+            cost = float(row["cost"].replace('$', ''))
+            temp_sum += cost
+        temp_sum = round(temp_sum, 2)
+        total_cost_list.append(temp_sum)
+
+    total_cost = sum(total_cost_list)
+    print("total_cost: {}".format(total_cost))
+    print("total_cost_list: {}".format(total_cost_list))
+
     print("Which Person paid?\nEnter 1-{}:".format(numPerson))
-    # choice = getChoice(numPerson)
-    choice = 1 #DEBUG REMOVE LATER ################################################
+    person_paid = getChoice(numPerson)-1
+    # person_paid = 0 #DEBUG REMOVE LATER ################################################################################################
+    for index, person_cost in enumerate(total_cost_list):
+        if index == person_paid or index == numPerson:
+            continue
+        else:
+            # print("person_cost: {}".format(person_cost))
+            person_owes = person_cost + (total_cost_list[-1] / numPerson)
+            person_owes = round(person_owes, 2)
+            money_owed[index] = person_owes
+    # print("money_owed: {}".format(money_owed))
+    return (money_owed, person_paid)
+
+
+
+#------------------------------------------------------
+def printResults(money_owed, person_paid):
+    for i, person_owed in enumerate(money_owed):
+        if i == person_paid:
+            continue
+        else:
+            print("Person {} owes ${}".format(i+1, person_owed))
+
+
 
 #------------------------------------------------------
 def menu():
@@ -93,14 +133,14 @@ def menu():
 
 #---------------------------MAIN---------------------------
 numPerson = 2
-# df_result = convertExcelToDataframe('TraderJoes1.csv')
+df_result = convertExcelToDataframe('temp.csv')
 # print(df_result)
-# person_list = sortItems(numPerson, df_result)
+person_list = sortItems(numPerson, df_result)
 
-test_list = []
-test_list.append(pd.DataFrame(data = {'item_name': ['ALMOND', 'ALFREDO', 'VEG', 'BANANA'], 'cost': ['$5.38', '$6.49', '$1.99', '$1.14']}))
-test_list.append(pd.DataFrame(data = {'item_name': ['GREEK HONEY', 'COOKIES'], 'cost': ['$9.98', '$13.93']}))
-test_list.append(pd.DataFrame(data = {'item_name': ['CHICKEN', 'SPINACH', 'BACON'], 'cost': ['$9.22', '$1.99', '$5.49']}))
-# print(test_list)
+# test_list = []
+# test_list.append(pd.DataFrame(data = {'item_name': ['ALMOND', 'ALFREDO', 'VEG', 'BANANA'], 'cost': ['$5.38', '$6.49', '$1.99', '$1.14']}))
+# test_list.append(pd.DataFrame(data = {'item_name': ['GREEK HONEY', 'COOKIES'], 'cost': ['$9.98', '$13.93']}))
+# test_list.append(pd.DataFrame(data = {'item_name': ['CHICKEN', 'SPINACH', 'BACON'], 'cost': ['$9.22', '$1.99', '$5.49']}))
 
-calculations(numPerson, test_list)
+(money_owed, person_paid) = calculations(numPerson, person_list)
+printResults(money_owed, person_paid)

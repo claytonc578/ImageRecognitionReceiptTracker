@@ -2,6 +2,7 @@ import os, io
 from google.cloud import vision_v1 as vision
 from google.cloud.vision_v1 import types
 import pandas as pd
+import sys
 
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'ServiceAccountToken.json'
 
@@ -19,10 +20,10 @@ def detectText(img):
     for text in texts:
         print('\n"{}"'.format(text.description))
 
-        vertices = (['({},{})'.format(vertex.x, vertex.y)
-                    for vertex in text.bounding_poly.vertices])
-
-        print('bounds: {}'.format(','.join(vertices)))
+        # vertices = (['({},{})'.format(vertex.x, vertex.y)
+        #             for vertex in text.bounding_poly.vertices])
+        #
+        # print('bounds: {}'.format(','.join(vertices)))
 
         df = df.append(
             dict(
@@ -40,8 +41,8 @@ def detectText(img):
         )
     return df
 
-FILE_NAME = 'TraderJoes1.jpg'
+FILE_NAME = sys.argv[1]
 FOLDER_PATH = r'C:\PythonProjects\ReceiptOCR_Project\VisionAPI\image_receipts'
 img = os.path.join(FOLDER_PATH, FILE_NAME)
 df1 = detectText(img)
-df1.to_csv('TraderJoes1.csv', index=False)
+df1.to_csv('temp.csv', index=False)
